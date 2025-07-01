@@ -11,11 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reviews', function (Blueprint $table) {
+        Schema::create('thesis_progress', function (Blueprint $table) {
             $table->id();
             $table->foreignId('study_id')->references('id')->on('studies')->cascadeOnDelete();
+            $table->foreignId('check_by')->references('id')->on('users')->cascadeOnDelete();
             $table->string('comment');
             $table->enum('status', ['Revise', 'Approved']);
+            $table->dateTime('start_check_date');
+            $table->dateTime('end_check_date');
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reviews');
+        Schema::dropIfExists('thesis_progress');
     }
 };
