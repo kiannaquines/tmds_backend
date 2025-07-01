@@ -34,15 +34,11 @@ class AppServiceProvider extends ServiceProvider
                 return Str::startsWith($route->uri, 'api/');
             });
 
-        Gate::define('viewApiDocs', function (User $user) {
-            return in_array($user->email, ['angelo@gmail.com']);
-        });
-
         Scramble::configure()
-        ->withDocumentTransformers(function (OpenApi $openApi) {
-            $openApi->secure(
-                SecurityScheme::http('bearer')
-            );
-        });
+            ->withDocumentTransformers(function (OpenApi $openApi) {
+                $openApi->secure(
+                    SecurityScheme::http('bearer')
+                );
+            });
     }
 }
