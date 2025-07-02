@@ -23,9 +23,8 @@ class ThesisController extends Controller
         ]);
 
         $adviser = User::find($validated['adviser']);
-        if (!$adviser || !$adviser->hasRole('Adviser')) {
-            return response()->json(['message' => 'Selected user is not a valid adviser.'], 422);
-        }
+        
+        if (!$adviser || !$adviser->hasRole('Adviser')) return response()->json(['message' => 'Selected user is not a valid adviser.'], 422);
 
         $validated['user_id'] = $request->user()->id;
 
@@ -45,9 +44,8 @@ class ThesisController extends Controller
     {
         $thesis = Thesis::find($id);
 
-        if (!$thesis) {
-            return response()->json(['message' => 'Thesis not found.'], 404);
-        }
+        if (!$thesis) return response()->json(['message' => 'Thesis not found.'], 404);
+
 
         return response()->json([
             'data' => $thesis,
@@ -63,9 +61,7 @@ class ThesisController extends Controller
     {
         $thesis = Thesis::find($id);
 
-        if (!$thesis) {
-            return response()->json(['message' => 'Thesis not found.'], 404);
-        }
+        if (!$thesis) return response()->json(['message' => 'Thesis not found.'], 404);
 
         $validated = $request->validate([
             'title' => 'sometimes|required|string|unique:studies,title,' . $id,
@@ -77,9 +73,7 @@ class ThesisController extends Controller
 
         if (isset($validated['adviser'])) {
             $adviser = User::find($validated['adviser']);
-            if (!$adviser || !$adviser->hasRole('Adviser')) {
-                return response()->json(['message' => 'Selected user is not a valid adviser.'], 422);
-            }
+            if (!$adviser || !$adviser->hasRole('Adviser')) return response()->json(['message' => 'Selected user is not a valid adviser.'], 422);
         }
 
         $thesis->update($validated);
@@ -98,9 +92,7 @@ class ThesisController extends Controller
     {
         $thesis = Thesis::find($id);
 
-        if (!$thesis) {
-            return response()->json(['message' => 'Thesis not found.'], 404);
-        }
+        if (!$thesis) return response()->json(['message' => 'Thesis not found.'], 404);
 
         $thesis->delete();
 

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class ThesisProgressController extends Controller
 {
+
     /**
      * @param \Illuminate\Http\Request $request
      * @return mixed|\Illuminate\Http\JsonResponse

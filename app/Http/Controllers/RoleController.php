@@ -17,9 +17,7 @@ class RoleController extends Controller
             ];
         });
 
-        if (!$roles) {
-            return response()->json(['message' => 'No roles available please try again later.'], 404);
-        }
+        if (!$roles) return response()->json(['message' => 'No roles available please try again later.'], 404);
 
         return response()->json([
             'data' => $roles,
