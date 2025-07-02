@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ThesisController;
 use App\Http\Controllers\ThesisProgressController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\StudyStatusController;
 
 Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
     // User Routes
@@ -23,6 +24,9 @@ Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
     Route::get('/thesis-progress/{id}', [ThesisProgressController::class, 'show']);
     Route::get('/thesis-progress/all/{id}', [ThesisProgressController::class, 'showAllProgress']);
     Route::delete('/thesis-progress/{id}', [ThesisProgressController::class, 'destroy']);
+
+    // Thesis Status
+    Route::post('thesis-status/{id}', [StudyStatusController::class, 'update']);
 });
 
 Route::prefix('v1')->group(function () {
