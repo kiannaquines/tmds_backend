@@ -41,6 +41,8 @@ Route::prefix('v1')->group(function () {
     // Auth Routes
     Route::post('/login', action: [AuthController::class, 'login']);
     Route::post('/register', action: [AuthController::class, 'register']);
+    Route::post('/forgot', action: [AuthController::class, 'forgot']);
+    Route::post('/reset', action: [AuthController::class, 'reset']);
     Route::post('/register/faculty', action: [AuthController::class, 'registerFaculty']);
 
     // Roles
