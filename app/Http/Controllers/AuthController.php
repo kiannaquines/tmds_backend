@@ -98,9 +98,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! is_string($user->password) || ! Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid email or password.'], 401);
-        }
+        if (! $user || ! is_string($user->password) || ! Hash::check($request->password, $user->password)) return response()->json(['message' => 'Invalid email or password.'], 401);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
