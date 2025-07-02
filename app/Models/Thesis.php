@@ -8,4 +8,9 @@ class Thesis extends Model
 {
     protected $table = "studies";
     protected $fillable = ["user_id","title","adviser","department","year","type"];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 }

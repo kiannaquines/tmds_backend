@@ -17,8 +17,6 @@ return new class extends Migration
             $table->foreignId('check_by')->references('id')->on('users')->cascadeOnDelete();
             $table->string('comment');
             $table->enum('status', ['Revise', 'Approved']);
-            $table->dateTime('start_check_date');
-            $table->dateTime('end_check_date');
             $table->timestamps();
         });
     }
