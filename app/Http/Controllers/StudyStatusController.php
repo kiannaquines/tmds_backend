@@ -19,7 +19,6 @@ class StudyStatusController extends Controller
         ]);
 
         $status = StudyStatus::find($id);
-
         if (!$status) return response()->json(['message' => 'Study status is not found, please try again'], 404);
 
         $status->update($validated);
