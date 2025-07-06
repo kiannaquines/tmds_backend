@@ -3,6 +3,6 @@
 This is a thesis document management system that uses a Bearer Token for authentication and dedoc package for fast 
 api development.
 
-## License
+# Application Programming Interface for Thesis Document Management Software
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This is the api for tdms using laravel with Bearer Token Auth.
