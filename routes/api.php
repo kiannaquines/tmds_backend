@@ -9,6 +9,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudyStatusController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\FacultyController;
 
 Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
     // User Routes
@@ -35,6 +36,11 @@ Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
 
     // Chat
     Route::post('chat/{conversationUuid}', [ChatController::class, 'store']);
+
+    // Faculty
+    Route::get('/faculty', [FacultyController::class, 'faculty']);
+    Route::get('/department', [FacultyController::class, 'department']);
+    Route::get('/study', [FacultyController::class, 'study']);
 });
 
 Route::prefix('v1')->group(function () {
