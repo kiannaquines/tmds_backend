@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Elizabeth R. Gentiva',
             'email' => 'elizabeth@gmail.com',
             'password' => 'password'
-        ])->assignRole('Adviser');
+        ])->assignRole('Faculty');
 
         User::factory()->create([
             'name' => 'Catherine Daffon',
@@ -54,6 +54,6 @@ class DatabaseSeeder extends Seeder
             'name' => 'Ryan Gonzaga',
             'email' => 'ryan@gmail.com',
             'password' => 'password'
-        ])->assignRole('Panel');
+        ])->assignRole('Faculty');
     }
 }

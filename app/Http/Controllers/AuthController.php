@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\ResetPasswordNotification;
 
 class AuthController extends Controller
 {
@@ -150,18 +153,18 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
         ]);
 
-        $status = Password::sendResetLink($request->only('email'));
+        $otp = rand(100000, 999999);
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json([
-                'message' => 'Password reset link sent to your email.',
-            ], 200);
-        }
+        Cache::put('password_reset_otp_' . $request->email, $otp, now()->addMinutes(10));
+
+        Notification::route('mail', $request->email)
+            ->notify(new ResetPasswordNotification($otp));
 
         return response()->json([
-            'message' => 'Unable to send reset link.',
-        ], 500);
+            'message' => 'An OTP has been sent to your email.',
+        ], 200);
     }
+
 
     /**
      * @param \Illuminate\Http\Request $request
@@ -170,24 +173,31 @@ class AuthController extends Controller
     public function reset(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'token' => 'required|string',
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|digits:6',
             'password' => 'required|confirmed|min:8',
         ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->save();
+        $cachedOtp = Cache::get('password_reset_otp_' . $request->email);
 
-                $user->tokens()->delete();
-            }
-        );
+        if (!$cachedOtp || $cachedOtp != $request->otp) {
+            return response()->json([
+                'message' => 'Invalid or expired OTP.',
+            ], 422);
+        }
 
-        return $status == Password::PASSWORD_RESET
-            ? response()->json(['message' => 'Password has been reset successfully.'])
-            : response()->json(['message' => __($status)], 422);
+        $user = User::where('email', $request->email)->first();
+
+        $user->forceFill([
+            'password' => Hash::make($request->password),
+        ])->save();
+
+        $user->tokens()->delete();
+
+        Cache::forget('password_reset_otp_' . $request->email);
+
+        return response()->json([
+            'message' => 'Password has been reset successfully.',
+        ]);
     }
 }

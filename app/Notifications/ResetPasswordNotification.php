@@ -15,10 +15,7 @@ class ResetPasswordNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct($token)
-    {
-        $this->token = $token;
-    }
+    public function __construct(public int $otp) {}
 
     /**
      * Get the notification's delivery channels.
@@ -35,14 +32,17 @@ class ResetPasswordNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        $frontendUrl = env('FRONTEND_RESET_PASSWORD_URL');
-
-        $resetUrl = "{$frontendUrl}?token={$this->token}&email={$notifiable->email}";
-
         return (new MailMessage)
-            ->subject('Reset Your Password')
-            ->line('Click the button below to reset your password:')
-            ->action('Reset Password', $resetUrl)
-            ->line('If you did not request a password reset, no further action is required.');
+            ->subject('Password Reset OTP Request')
+            ->greeting('Hello!')
+            ->line('You recently requested to reset your password.')
+            ->line('Please use the one-time password (OTP) below to proceed:')
+            ->line('')
+            ->line("🔐 **{$this->otp}**")
+            ->line('')
+            ->line('This code will expire in **10 minutes** for your security.')
+            ->line('If you did not request this, please ignore this email.')
+            ->salutation('Thank you,')
+            ->salutation(config('app.name') . ' Team');
     }
 }
