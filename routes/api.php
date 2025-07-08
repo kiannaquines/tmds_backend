@@ -21,12 +21,17 @@ Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
     Route::get('/thesis/{id}', [ThesisController::class, 'show']);
     Route::put('/thesis/{id}', [ThesisController::class, 'update']);
     Route::delete('/thesis/{id}', [ThesisController::class, 'destroy']);
+    Route::get('/submissions', [ThesisController::class, 'mySubmissions']);
+
+    // Notifications
+    Route::get('/notification', [ThesisController::class, 'notification']);
 
     // Thesis Progress Routes
     Route::post('/thesis-progress', [ThesisProgressController::class, 'store']);
     Route::get('/thesis-progress/{id}', [ThesisProgressController::class, 'show']);
     Route::get('/thesis-progress/all/{id}', [ThesisProgressController::class, 'showAllProgress']);
     Route::delete('/thesis-progress/{id}', [ThesisProgressController::class, 'destroy']);
+
 
     // Thesis Status
     Route::post('thesis-status/{id}', [StudyStatusController::class, 'update']);

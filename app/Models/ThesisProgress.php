@@ -18,4 +18,14 @@ class ThesisProgress extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function study()
+    {
+        return $this->belongsTo(Thesis::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

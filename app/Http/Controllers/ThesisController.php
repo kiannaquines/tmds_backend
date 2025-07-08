@@ -6,7 +6,9 @@ use App\Models\Thesis;
 use App\Models\User;
 use App\Models\Adviser;
 use App\Models\Panel;
+use App\Models\ThesisProgress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ThesisController extends Controller
 {
@@ -17,7 +19,7 @@ class ThesisController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|unique:studies,title',
+            'title' => 'required|string',
             'department' => 'required|string',
 
             'adviser' => 'required|string|exists:users,name|different:panel1|different:panel2|different:panel3',
@@ -104,12 +106,13 @@ class ThesisController extends Controller
     }
 
     /**
+     * @param \Illuminate\Http\Request $request
      * @param integer $id
      * @return mixed|\Illuminate\Http\JsonResponse
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
-        $thesis = Thesis::find($id);
+        $thesis = Thesis::where('user_id', $request->user()->id)->where('id', $id)->first();
 
         if (!$thesis) return response()->json(['message' => 'Thesis not found.'], 404);
 
@@ -118,6 +121,51 @@ class ThesisController extends Controller
             'data' => $thesis,
         ]);
     }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @param integer $id
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function notification(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        $thesisProgress = DB::table('thesis_progress')
+            ->join('studies', 'thesis_progress.study_id', '=', 'studies.id')
+            ->where('studies.user_id', $userId)
+            ->select(
+                'thesis_progress.*',
+                'studies.title as study_title',
+                'studies.type as study_type'
+            )
+            ->get();
+
+        if ($thesisProgress->isEmpty()) {
+            return response()->json(['message' => 'There was no thesis progress found.'], 404);
+        }
+
+        return response()->json([
+            'data' => $thesisProgress,
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function mySubmissions(Request $request)
+    {
+        $thesis = Thesis::where('user_id', $request->user()->id)->get();
+
+        if (!$thesis) return response()->json(['message' => 'No thesis found.'], 404);
+
+
+        return response()->json([
+            'data' => $thesis,
+        ]);
+    }
+
 
     /**
      * @param integer $id
