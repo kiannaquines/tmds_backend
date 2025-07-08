@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Thesis;
 use App\Models\User;
+use App\Models\Adviser;
+use App\Models\Panel;
 use Illuminate\Http\Request;
 
 class ThesisController extends Controller
@@ -16,19 +18,84 @@ class ThesisController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|unique:studies,title',
-            'adviser' => 'required|integer|exists:users,id',
             'department' => 'required|string',
+
+            'adviser' => 'required|string|exists:users,name|different:panel1|different:panel2|different:panel3',
+
+            'panel1' => [
+                'required',
+                'string',
+                'exists:users,name',
+                'different:panel2',
+                'different:panel3',
+                'different:adviser',
+            ],
+            'panel2' => [
+                'required',
+                'string',
+                'exists:users,name',
+                'different:panel1',
+                'different:panel3',
+                'different:adviser',
+            ],
+            'panel3' => [
+                'required',
+                'string',
+                'exists:users,name',
+                'different:panel1',
+                'different:panel2',
+                'different:adviser',
+            ],
+
             'year' => 'required|integer',
             'type' => 'required|string',
         ]);
 
-        $adviser = User::find($validated['adviser']);
-        
-        if (!$adviser || !$adviser->hasRole('Adviser')) return response()->json(['message' => 'Selected user is not a valid adviser.'], 422);
+        $adviser = User::where('name', $validated['adviser'])->first();
+        $panel1 = User::where('name', $validated['panel1'])->first();
+        $panel2 = User::where('name', $validated['panel2'])->first();
+        $panel3 = User::where('name', $validated['panel3'])->first();
 
-        $validated['user_id'] = $request->user()->id;
+        if (!$panel1) return response()->json(['message' => 'First panel cannot be found, please try again.']);
+        if (!$panel2) return response()->json(['message' => 'Second panel cannot be found, please try again.']);
+        if (!$panel3) return response()->json(['message' => 'Third panel cannot be found, please try again.']);
 
-        $thesis = Thesis::create($validated);
+        if (!$adviser || !$adviser->hasRole('Faculty')) return response()->json(['message' => 'Selected user is not a valid adviser.'], 422);
+
+        $thesis = Thesis::create([
+            'user_id' => $request->user()->id,
+            'title' => $validated['title'],
+            'adviser' => $adviser['id'],
+            'department' => $validated['department'],
+            'year' => $validated['year'],
+            'type' => $validated['type']
+        ]);
+
+        Adviser::create([
+            'adviser' => $adviser['id'],
+            'study_id' => $thesis->id
+        ]);
+
+        Panel::insert([
+            [
+                'panel' => $panel1->id,
+                'study_id' => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'panel' => $panel2->id,
+                'study_id' => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'panel' => $panel3->id,
+                'study_id' => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ]);
 
         return response()->json([
             'message' => 'Thesis created successfully.',
