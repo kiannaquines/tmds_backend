@@ -25,11 +25,11 @@ class FacultyController extends Controller
     public function department(Request $request)
     {
         $departments = [
-            'Department of Accountancy',
-            'Department of Agribusiness',
-            'Department of Agricultural Economics',
-            'Department of Business Administration',
-            'Department of Development Management',
+            ['id' => 1, 'name' => 'Department of Accountancy'],
+            ['id' => 2, 'name' => 'Department of Agribusiness'],
+            ['id' => 3, 'name' => 'Department of Agricultural Economics'],
+            ['id' => 4, 'name' => 'Department of Business Administration'],
+            ['id' => 5, 'name' => 'Department of Development Management'],
         ];
 
         return response()->json($departments);
@@ -41,10 +41,9 @@ class FacultyController extends Controller
     public function study(Request $request)
     {
         $study = [
-            'Manuscript',
-            'Outline',
+            ['id' => 1, 'type' => 'Manuscript'],
+            ['id' => 2, 'type' =>  'Outline'],
         ];
-
         return response()->json($study);
     }
 }
