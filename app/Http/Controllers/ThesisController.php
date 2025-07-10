@@ -139,7 +139,7 @@ class ThesisController extends Controller
                 'studies.title as study_title',
                 'studies.type as study_type'
             )
-            ->get();
+            ->orderByDesc('created_at')->get();
 
         if ($thesisProgress->isEmpty()) {
             return response()->json(['message' => 'There was no thesis progress found.'], 404);
