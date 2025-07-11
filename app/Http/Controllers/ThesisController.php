@@ -9,6 +9,7 @@ use App\Models\Panel;
 use App\Models\ThesisProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ThesisController extends Controller
 {
@@ -203,6 +204,36 @@ class ThesisController extends Controller
 
 
     /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function myAdvisees(Request $request)
+    {
+        $adviserId = $request->user()->id;
+
+        $adviseesList = DB::table('advisers')
+            ->join('studies', 'advisers.study_id', '=', 'studies.id')
+            ->join('users', 'studies.user_id', '=', 'users.id')
+            ->where('advisers.adviser', '=', $adviserId)
+            ->select(
+                'users.id as student_id',
+                'users.name as student_name',
+                'studies.title as study_title',
+                'studies.type as study_type'
+            )
+            ->get();
+
+        if ($adviseesList->isEmpty()) {
+            return response()->json(['message' => 'No advisee data found.'], 404);
+        }
+
+        return response()->json([
+            'data' => $adviseesList,
+        ]);
+    }
+
+
+    /**
      * @param integer $id
      * @param \Illuminate\Http\Request $request,
      * @return mixed|\Illuminate\Http\JsonResponse
@@ -248,6 +279,59 @@ class ThesisController extends Controller
 
         return response()->json([
             'message' => 'Thesis deleted successfully.',
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function studiesBelongsToMe(Request $request)
+    {
+        $adviserId = $request->user()->id;
+        $thesisBelongToMe = Thesis::with(['user', 'adviser'])->where('adviser', $adviserId)->get();
+
+        if ($thesisBelongToMe->isEmpty()) {
+            return response()->json(['message' => 'No thesis advisee found.'], 404);
+        }
+
+        return response()->json([
+            'data' => $thesisBelongToMe,
+        ]);
+    }
+
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function manuscript(Request $request)
+    {
+        $adviserId = $request->user()->id;
+        $thesis = Thesis::where('type', 'Manuscript')->where('adviser', $adviserId)->get();
+
+        if (!$thesis) return response()->json(['message' => 'No thesis found.'], 404);
+
+
+        return response()->json([
+            'data' => $thesis,
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function outline(Request $request)
+    {
+        $adviserId = $request->user()->id;
+        $thesis = Thesis::where('type', 'Outline')->where('adviser', $adviserId)->get();
+
+        if (!$thesis) return response()->json(['message' => 'No thesis found.'], 404);
+
+
+        return response()->json([
+            'data' => $thesis,
         ]);
     }
 }
