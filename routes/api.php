@@ -46,6 +46,9 @@ Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
     Route::get('/faculty', [FacultyController::class, 'faculty']);
     Route::get('/department', [FacultyController::class, 'department']);
     Route::get('/study', [FacultyController::class, 'study']);
+
+    // Timeline
+    Route::get('/timeline/{studyId}',[ThesisController::class, 'timeline']);
 });
 
 Route::prefix('v1')->group(function () {

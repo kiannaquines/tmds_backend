@@ -109,8 +109,8 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'You have successfully logged in!',
             'access_token' => $token,
-            'token_type' => 'Bearer',
             'user' => $user,
+            'role' => $user->getRoleNames()->first(),
         ]);
     }
 

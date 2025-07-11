@@ -152,6 +152,41 @@ class ThesisController extends Controller
 
     /**
      * @param \Illuminate\Http\Request $request
+     * @param integer $studyId
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function timeline(Request $request, string $studyId)
+    {
+        $userId = $request->user()->id;
+
+        $thesisProgress = DB::table('thesis_progress')
+            ->join('studies', 'thesis_progress.study_id', '=', 'studies.id')
+            ->join('users', 'studies.user_id', '=', 'users.id')
+            ->join('users AS check_by_person', 'thesis_progress.check_by', '=', 'check_by_person.id')
+            ->where('studies.user_id', $userId)
+            ->where('studies.id', $studyId)
+            ->select(
+                'thesis_progress.*',
+                'users.id',
+                'users.name',
+                'check_by_person.id AS check_by_id',
+                'check_by_person.name AS check_by',
+                'studies.title as study_title',
+                'studies.type as study_type'
+            )
+            ->orderByDesc('thesis_progress.created_at')->get();
+
+        if ($thesisProgress->isEmpty()) {
+            return response()->json(['message' => 'There was no thesis progress found.'], 404);
+        }
+
+        return response()->json([
+            'data' => $thesisProgress,
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
      * @return mixed|\Illuminate\Http\JsonResponse
      */
     public function mySubmissions(Request $request)
