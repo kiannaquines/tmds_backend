@@ -12,9 +12,13 @@ class FacultyController extends Controller
      */
     public function faculty(Request $request)
     {
-        $users = User::role('Faculty')->select('id', 'name')->get();
+        $users = User::whereDoesntHave('roles', function ($query) {
+            $query->where('name', 'Student');
+        })->select('id', 'name')->get();
 
-        if (!$users) return response()->json(['message' => 'No faculty as of the moment.'], 404);
+        if ($users->isEmpty()) {
+            return response()->json(['message' => 'No faculty as of the moment.'], 404);
+        }
 
         return response()->json($users);
     }
