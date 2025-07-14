@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->references('id')->on('users')->cascadeOnDelete()->comment('Study owner');
             $table->string('title')->comment('Title of the study');
             $table->foreignId(column: 'adviser')->references('id')->on('users')->cascadeOnDelete();
-            $table->enum('department',['Department of Accountancy','Department of Agribusiness','Department of Agricultural Economics','Department of Business Administration','Department of Development Management'])->comment('Study department');
+            $table->enum('department', ['Department of Accountancy', 'Department of Agribusiness', 'Department of Agricultural Economics', 'Department of Business Administration', 'Department of Development Management'])->comment('Study department');
             $table->integer('year')->comment('Study year');
-            $table->enum('type',['Outline','Manuscript'])->comment('Study status');
+            $table->enum('type', ['Outline', 'Manuscript'])->comment('Study status');
             $table->timestamps();
         });
     }

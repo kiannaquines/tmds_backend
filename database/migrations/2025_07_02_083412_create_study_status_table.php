@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('study_status', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('check_by')->references('id')->on('users')->cascadeOnDelete();
             $table->foreignId('study_id')->references('id')->on('studies')->cascadeOnDelete();
-            $table->enum('status',['Pending','In Progress','Complete']);
+            $table->enum('status', ['Pending', 'In Progress', 'Complete'])->default('Pending');
             $table->timestamps();
         });
     }

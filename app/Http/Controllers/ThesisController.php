@@ -334,4 +334,57 @@ class ThesisController extends Controller
             'data' => $thesis,
         ]);
     }
+
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function myAdviser(Request $request)
+    {
+        $studentId = $request->user()->id;
+        $adviserList = DB::table('advisers')
+            ->join('studies', 'advisers.study_id', '=', 'studies.id')
+            ->join('users', 'studies.user_id', '=', 'users.id')
+            ->where('users.id', '=', $studentId)
+            ->select(
+                'users.id as student_id',
+                'users.name as student_name',
+            )
+            ->get();
+
+        if ($adviserList->isEmpty()) {
+            return response()->json(['message' => 'No adviser data found.'], 404);
+        }
+
+        return response()->json([
+            'data' => $adviserList,
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function myPanels(Request $request)
+    {
+        $studentId = $request->user()->id;
+        $panelList = DB::table('panels')
+            ->join('studies', 'panels.study_id', '=', 'studies.id')
+            ->join('users', 'studies.user_id', '=', 'users.id')
+            ->where('users.id', '=', $studentId)
+            ->select(
+                'users.id as student_id',
+                'users.name as student_name',
+            )
+            ->get();
+
+        if ($panelList->isEmpty()) {
+            return response()->json(['message' => 'No panels data found.'], 404);
+        }
+
+        return response()->json([
+            'data' => $panelList,
+        ]);
+    }
 }

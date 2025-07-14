@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         ])->assignRole('Student');
 
         User::factory()->create([
-            'name' => 'Elizabeth R. Gentiva',
+            'name' => 'Elizabeth R. Genotiva',
             'email' => 'elizabeth@gmail.com',
             'password' => 'password'
         ])->assignRole('Faculty');

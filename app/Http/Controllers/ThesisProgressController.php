@@ -16,7 +16,7 @@ class ThesisProgressController extends Controller
     {
         $validated = $request->validate([
             'study_id' => 'required|integer|exists:studies,id',
-            'comment' => 'required|string|max:255',
+            'comment' => 'required|string|max:500',
             'status' => 'required|string|in:Revise,Approved',
         ]);
         $validated['check_by'] = $request->user()->id;
