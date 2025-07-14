@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('study_status', function (Blueprint $table) {
+        Schema::create('paper_location', function (Blueprint $table) {
             $table->id();
             $table->foreignId('check_by')->references('id')->on('users')->cascadeOnDelete();
-            $table->foreignId('study_id')->references('id')->on('studies')->cascadeOnDelete();
-            $table->enum('status', ['Pending', 'In Progress', 'Complete'])->default('Pending');
+            $table->foreignId('study_id')->references('id')->on('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('study_status');
+        Schema::dropIfExists('paper_location');
     }
 };

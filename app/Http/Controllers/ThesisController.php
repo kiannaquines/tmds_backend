@@ -20,7 +20,7 @@ class ThesisController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string',
+            'title' => 'required|string|unique',
             'department' => 'required|string',
 
             'adviser' => 'required|string|exists:users,name|different:panel1|different:panel2|different:panel3',
@@ -343,13 +343,14 @@ class ThesisController extends Controller
     public function myAdviser(Request $request)
     {
         $studentId = $request->user()->id;
-        $adviserList = DB::table('advisers')
+
+        $adviserList = DB::table('users')
+            ->join('advisers', 'users.id', '=', 'advisers.adviser')
             ->join('studies', 'advisers.study_id', '=', 'studies.id')
-            ->join('users', 'studies.user_id', '=', 'users.id')
-            ->where('users.id', '=', $studentId)
+            ->where('studies.user_id', '=', $studentId)
             ->select(
-                'users.id as student_id',
-                'users.name as student_name',
+                'users.id as adviser_id',
+                'users.name as adviser_name',
             )
             ->get();
 
@@ -369,18 +370,19 @@ class ThesisController extends Controller
     public function myPanels(Request $request)
     {
         $studentId = $request->user()->id;
-        $panelList = DB::table('panels')
+
+        $panelList = DB::table('users')
+            ->join('panels', 'users.id', '=', 'panels.panel')
             ->join('studies', 'panels.study_id', '=', 'studies.id')
-            ->join('users', 'studies.user_id', '=', 'users.id')
-            ->where('users.id', '=', $studentId)
+            ->where('studies.user_id', '=', $studentId)
             ->select(
-                'users.id as student_id',
-                'users.name as student_name',
+                'users.id as panel_id',
+                'users.name as panel_name',
             )
             ->get();
 
         if ($panelList->isEmpty()) {
-            return response()->json(['message' => 'No panels data found.'], 404);
+            return response()->json(['message' => 'No panel data found.'], 404);
         }
 
         return response()->json([
