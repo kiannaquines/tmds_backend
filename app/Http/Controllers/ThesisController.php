@@ -63,8 +63,6 @@ class ThesisController extends Controller
         if (!$panel2) return response()->json(['message' => 'Second panel cannot be found, please try again.']);
         if (!$panel3) return response()->json(['message' => 'Third panel cannot be found, please try again.']);
 
-        if (!$adviser || !$adviser->hasRole('Faculty')) return response()->json(['message' => 'Selected user is not a valid adviser.'], 422);
-
         $thesis = Thesis::create([
             'user_id' => $request->user()->id,
             'title' => $validated['title'],
@@ -288,8 +286,8 @@ class ThesisController extends Controller
      */
     public function studiesBelongsToMe(Request $request)
     {
-        $adviserId = $request->user()->id;
-        $thesisBelongToMe = Thesis::with(['user', 'adviser'])->where('adviser', $adviserId)->get();
+        $userId = $request->user()->id;
+        $thesisBelongToMe = Thesis::with(['user', 'adviser'])->where('adviser', $userId)->get();
 
         if ($thesisBelongToMe->isEmpty()) {
             return response()->json(['message' => 'No thesis advisee found.'], 404);
@@ -299,6 +297,25 @@ class ThesisController extends Controller
             'data' => $thesisBelongToMe,
         ]);
     }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function includedMeAsPanel(Request $request)
+    {
+        $userId = $request->user()->id;
+        $thesisBelongToMe = Panel::with(['user', 'adviser'])->where('adviser', $userId)->get();
+
+        if ($thesisBelongToMe->isEmpty()) {
+            return response()->json(['message' => 'No thesis advisee found.'], 404);
+        }
+
+        return response()->json([
+            'data' => $thesisBelongToMe,
+        ]);
+    }
+
 
 
     /**
@@ -396,5 +413,62 @@ class ThesisController extends Controller
         return response()->json([
             'data' => $panelList,
         ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function isAlreadyCheckedAndApproved(Request $request, string $studyId)
+    {
+        try {
+            $userId = $request->user()->id;
+
+            $exists = ThesisProgress::where('check_by', $userId)
+                ->where('study_id', $studyId)
+                ->where('status', 'Approved')
+                ->exists();
+
+            return response()->json([
+                'already_approved' => $exists,
+                'message' => $exists ? 'This thesis is already approved.' : 'No prior approval found.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to check approval status',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return mixed|\Illuminate\Http\JsonResponse
+     */
+    public function getAllStudentIncludedMeAsAPanel(Request $request)
+    {
+        try {
+            $panelId = $request->user()->id;
+
+            $students = DB::table('panels')
+                ->join('studies', 'panels.study_id', '=', 'studies.id')
+                ->join('users', 'studies.user_id', '=', 'users.id')
+                ->where('panels.panel', $panelId)
+                ->select(
+                    'users.name',
+                    'users.email',
+                    'studies.title',
+                    'studies.type'
+                )
+                ->get();
+
+            return response()->json(['data' => $students]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to retrieve student list',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

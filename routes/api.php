@@ -54,6 +54,12 @@ Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
     // My Advisers
     Route::get('/advisers', [ThesisController::class, 'myAdviser']);
     Route::get('/panels', [ThesisController::class, 'myPanels']);
+
+    // Check if Already Check and Approved
+    Route::get('/check/{studyId}',[ThesisController::class,'isAlreadyCheckedAndApproved']);
+    
+    // Get All Included Me as there panel
+    Route::get('/my-student', [ThesisController::class,'getAllStudentIncludedMeAsAPanel']);
 });
 
 Route::prefix('v1')->group(function () {
