@@ -20,7 +20,7 @@ class ThesisController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|unique',
+            'title' => 'required|string|unique:studies,title',
             'department' => 'required|string',
 
             'adviser' => 'required|string|exists:users,name|different:panel1|different:panel2|different:panel3',
@@ -351,6 +351,7 @@ class ThesisController extends Controller
             ->select(
                 'users.id as adviser_id',
                 'users.name as adviser_name',
+                'users.email as adviser_email',
             )
             ->get();
 
@@ -378,6 +379,7 @@ class ThesisController extends Controller
             ->select(
                 'users.id as panel_id',
                 'users.name as panel_name',
+                'users.email as panel_email',
             )
             ->get();
 
