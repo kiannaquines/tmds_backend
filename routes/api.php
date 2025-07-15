@@ -7,8 +7,6 @@ use App\Http\Controllers\ThesisController;
 use App\Http\Controllers\ThesisProgressController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StudyStatusController;
-use App\Http\Controllers\ConversationController;
-use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FacultyController;
 
 Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
@@ -35,12 +33,6 @@ Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
 
     // Thesis Status
     Route::post('thesis-status/{id}', [StudyStatusController::class, 'update']);
-
-    // Conversation
-    Route::post('initialize-conversation/{studyId}', [ConversationController::class, 'initializeConversation']);
-
-    // Chat
-    Route::post('chat/{conversationUuid}', [ChatController::class, 'store']);
 
     // Faculty
     Route::get('/faculty', [FacultyController::class, 'faculty']);

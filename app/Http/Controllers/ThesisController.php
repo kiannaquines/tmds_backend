@@ -347,11 +347,14 @@ class ThesisController extends Controller
         $adviserList = DB::table('users')
             ->join('advisers', 'users.id', '=', 'advisers.adviser')
             ->join('studies', 'advisers.study_id', '=', 'studies.id')
+            ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('studies.user_id', '=', $studentId)
             ->select(
                 'users.id as adviser_id',
                 'users.name as adviser_name',
                 'users.email as adviser_email',
+                'roles.name as role'
             )
             ->get();
 
@@ -375,11 +378,14 @@ class ThesisController extends Controller
         $panelList = DB::table('users')
             ->join('panels', 'users.id', '=', 'panels.panel')
             ->join('studies', 'panels.study_id', '=', 'studies.id')
+            ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('studies.user_id', '=', $studentId)
             ->select(
                 'users.id as panel_id',
                 'users.name as panel_name',
                 'users.email as panel_email',
+                'roles.name as role'
             )
             ->get();
 
