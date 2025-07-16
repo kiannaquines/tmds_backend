@@ -106,43 +106,57 @@ class ThesisController extends Controller
             ]
         ]);
 
-        StudyStatus::insert(
+        StudyStatus::insert([
             [
                 "student_id" => $studentId,
                 "faculty_id" => $adviser->id,
                 "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 "student_id" => $studentId,
                 "faculty_id" => $panel1->id,
                 "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 "student_id" => $studentId,
                 "faculty_id" => $panel2->id,
                 "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 "student_id" => $studentId,
                 "faculty_id" => $panel3->id,
                 "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 "student_id" => $studentId,
                 "faculty_id" => $drc->id,
                 "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 "student_id" => $studentId,
                 "faculty_id" => $crc->id,
                 "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 "student_id" => $studentId,
                 "faculty_id" => $dean->id,
                 "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
-        );
+        ]);
 
         return response()->json([
             'message' => 'Thesis created successfully.',
