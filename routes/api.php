@@ -56,10 +56,15 @@ Route::middleware(["auth:sanctum"])->prefix('v1')->group(function () {
     Route::get('/panels', [ThesisController::class, 'myPanels']);
 
     // Check if Already Check and Approved
-    Route::get('/check/{studyId}',[ThesisController::class,'isAlreadyCheckedAndApproved']);
-    
+    Route::get('/check/{studyId}', [ThesisController::class, 'isAlreadyCheckedAndApproved']);
+
     // Get All Included Me as there panel
-    Route::get('/my-student', [ThesisController::class,'getAllStudentIncludedMeAsAPanel']);
+    Route::get('/my-student', [ThesisController::class, 'getAllStudentIncludedMeAsAPanel']);
+
+    // Pending, In Progress, Approved
+    Route::get('/pending', [ThesisController::class, 'getAllPendingStatus']);
+    Route::get('/in-progress', [ThesisController::class, 'getAllInprogressStatus']);
+    Route::get('/approved', [ThesisController::class, 'getAllApprovedStatus']);
 });
 
 Route::prefix('v1')->group(function () {

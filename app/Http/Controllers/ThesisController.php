@@ -7,9 +7,9 @@ use App\Models\User;
 use App\Models\Adviser;
 use App\Models\Panel;
 use App\Models\ThesisProgress;
+use App\Models\StudyStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ThesisController extends Controller
 {
@@ -22,9 +22,7 @@ class ThesisController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|unique:studies,title',
             'department' => 'required|string',
-
             'adviser' => 'required|string|exists:users,name|different:panel1|different:panel2|different:panel3',
-
             'panel1' => [
                 'required',
                 'string',
@@ -49,7 +47,6 @@ class ThesisController extends Controller
                 'different:panel2',
                 'different:adviser',
             ],
-
             'year' => 'required|integer',
             'type' => 'required|string',
         ]);
@@ -63,8 +60,19 @@ class ThesisController extends Controller
         if (!$panel2) return response()->json(['message' => 'Second panel cannot be found, please try again.']);
         if (!$panel3) return response()->json(['message' => 'Third panel cannot be found, please try again.']);
 
+
+        $drc = User::role('Department Research Coordinator')
+            ->first();
+        $crc = User::role('College Research Coordinator')
+            ->first();
+        $dean = User::role('College Dean')
+            ->first();
+
+        $studentId = $request->user()->id;
+
+
         $thesis = Thesis::create([
-            'user_id' => $request->user()->id,
+            'user_id' => $studentId,
             'title' => $validated['title'],
             'adviser' => $adviser['id'],
             'department' => $validated['department'],
@@ -97,6 +105,44 @@ class ThesisController extends Controller
                 'updated_at' => now(),
             ]
         ]);
+
+        StudyStatus::insert(
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $adviser->id,
+                "study_id" => $thesis->id,
+            ],
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $panel1->id,
+                "study_id" => $thesis->id,
+            ],
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $panel2->id,
+                "study_id" => $thesis->id,
+            ],
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $panel3->id,
+                "study_id" => $thesis->id,
+            ],
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $drc->id,
+                "study_id" => $thesis->id,
+            ],
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $crc->id,
+                "study_id" => $thesis->id,
+            ],
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $dean->id,
+                "study_id" => $thesis->id,
+            ]
+        );
 
         return response()->json([
             'message' => 'Thesis created successfully.',
@@ -470,5 +516,41 @@ class ThesisController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllPendingStatus(Request $request)
+    {
+        $facultyId = $request->user()->id;
+        $pendingStatus = StudyStatus::with(['student', 'faculty', 'study'])->where('status', 'Pending')->where('faculty_id', $facultyId)->get();
+        if (!$pendingStatus) return response()->json(['message', 'No pending data found.'], 404);
+        return response()->json(['data' => $pendingStatus]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllInprogressStatus(Request $request)
+    {
+        $facultyId = $request->user()->id;
+        $inProgressStatus = StudyStatus::with(['student', 'faculty', 'study'])->where('status', 'In Progress')->where('faculty_id', $facultyId)->get();
+        if (!$inProgressStatus) return response()->json(['message', 'No in-progress data found.'], 404);
+        return response()->json(['data' => $inProgressStatus]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllApprovedStatus(Request $request)
+    {
+        $facultyId = $request->user()->id;
+        $approvedStatus = StudyStatus::with(['student', 'faculty', 'study'])->where('status', 'Approved')->where('faculty_id', $facultyId)->get();
+        if (!$approvedStatus) return response()->json(['message', 'No approved data found.'], 404);
+        return response()->json(['data' => $approvedStatus]);
     }
 }
