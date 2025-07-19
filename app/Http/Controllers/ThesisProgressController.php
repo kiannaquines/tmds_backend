@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ThesisProgress;
+use App\Models\StudyStatus;
 use Illuminate\Http\Request;
 
 class ThesisProgressController extends Controller
@@ -20,6 +21,12 @@ class ThesisProgressController extends Controller
             'status' => 'required|string|in:Revise,Approved',
         ]);
         $validated['check_by'] = $request->user()->id;
+
+        if ($validated['status'] == "Approved") {
+            $statusUpdate = StudyStatus::where('study_id', $validated['study_id'])->where('faculty_id', $request->user()->id);
+            $statusUpdate->update(['status' => 'Approved']);
+        }
+
         ThesisProgress::create($validated);
         return response()->json(['message' => 'You have successfully added the thesis progress.'], 201);
     }

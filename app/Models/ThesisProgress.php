@@ -28,4 +28,9 @@ class ThesisProgress extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function checkedBy()
+    {
+        return $this->belongsTo(User::class, 'check_by');
+    }
 }

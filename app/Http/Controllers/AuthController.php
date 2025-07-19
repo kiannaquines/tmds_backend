@@ -34,7 +34,13 @@ class AuthController extends Controller
                 'password' => Hash::make($validated['password']),
             ]);
 
-            $user->assignRole($validated['role']);
+            if($validated['role'] != "Adviser") {
+                $user->assignRole($validated['role']);
+                $user->assignRole('Adviser');
+            } else {
+                $user->assignRole($validated['role']);
+            }
+
 
             return response()->json([
                 'message' => 'User registered successfully',

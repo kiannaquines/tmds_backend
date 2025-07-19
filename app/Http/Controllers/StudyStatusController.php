@@ -14,11 +14,12 @@ class StudyStatusController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $facultyId = $request->user()->id;
         $validated = $request->validate([
             'status' => 'sometimes|required|in:Pending,In Progress,Complete'
         ]);
 
-        $status = StudyStatus::find($id);
+        $status = StudyStatus::where('study_id',$id)->where('faculty_id',$facultyId)->first();
         if (!$status) return response()->json(['message' => 'Study status is not found, please try again'], 404);
 
         $status->update($validated);

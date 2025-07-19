@@ -228,31 +228,37 @@ class ThesisController extends Controller
     {
         $userId = $request->user()->id;
 
-        $thesisProgress = DB::table('thesis_progress')
-            ->join('studies', 'thesis_progress.study_id', '=', 'studies.id')
-            ->join('users', 'studies.user_id', '=', 'users.id')
-            ->join('users AS check_by_person', 'thesis_progress.check_by', '=', 'check_by_person.id')
-            ->where('studies.user_id', $userId)
-            ->where('studies.id', $studyId)
-            ->select(
-                'thesis_progress.*',
-                'users.id',
-                'users.name',
-                'check_by_person.id AS check_by_id',
-                'check_by_person.name AS check_by',
-                'studies.title as study_title',
-                'studies.type as study_type'
-            )
-            ->orderByDesc('thesis_progress.created_at')->get();
+        $progress = ThesisProgress::with([
+            'study.user',
+            'checkedBy.roles'
+        ])
+            ->whereHas('study', function ($q) use ($userId, $studyId) {
+                $q->where('user_id', $userId)->where('id', $studyId);
+            })
+            ->orderByDesc('created_at')
+            ->get();
 
-        if ($thesisProgress->isEmpty()) {
+        if ($progress->isEmpty()) {
             return response()->json(['message' => 'There was no thesis progress found.'], 404);
         }
 
-        return response()->json([
-            'data' => $thesisProgress,
-        ]);
+        $formatted = $progress->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'study_id' => $item->study_id,
+                'comment' => $item->comment,
+                'status' => $item->status,
+                'created_at' => $item->created_at,
+                'checked_by' => $item->checkedBy?->name,
+                'checked_by_roles' => $item->checkedBy?->roles->pluck('name')->implode('/'),
+                'study_title' => $item->study->title ?? null,
+                'study_type' => $item->study->type ?? null,
+            ];
+        });
+
+        return response()->json(['data' => $formatted]);
     }
+
 
     /**
      * @param \Illuminate\Http\Request $request
