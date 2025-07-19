@@ -68,6 +68,9 @@ class ThesisController extends Controller
         $dean = User::role('College Dean')
             ->first();
 
+        $dc = User::role('Department Chairperson')
+            ->first();
+
         $studentId = $request->user()->id;
 
 
@@ -152,6 +155,13 @@ class ThesisController extends Controller
             [
                 "student_id" => $studentId,
                 "faculty_id" => $dean->id,
+                "study_id" => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                "student_id" => $studentId,
+                "faculty_id" => $dc->id,
                 "study_id" => $thesis->id,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -539,8 +549,32 @@ class ThesisController extends Controller
     public function getAllPendingStatus(Request $request)
     {
         $facultyId = $request->user()->id;
-        $pendingStatus = StudyStatus::with(['student', 'faculty', 'study'])->where('status', 'Pending')->where('faculty_id', $facultyId)->get();
-        if (!$pendingStatus) return response()->json(['message', 'No pending data found.'], 404);
+
+        $pendingStatus = StudyStatus::with(['student', 'faculty', 'study'])
+            ->where('status', 'Pending')
+            ->where('faculty_id', $facultyId)
+            ->get()
+            ->map(function ($row) {
+                $faculty = $row->faculty;
+
+                return [
+                    'id' => $row->id,
+                    'student' => $row->student,
+                    'study' => $row->study,
+                    'status' => $row->status,
+                    'faculty' => $faculty,
+                    'faculty_role' => $faculty && method_exists($faculty, 'getRoleNames')
+                        ? $faculty->getRoleNames()->first()
+                        : null,
+                    'created_at' => $row->created_at,
+                    'updated_at' => $row->updated_at,
+                ];
+            });
+
+        if ($pendingStatus->isEmpty()) {
+            return response()->json([], 404);
+        }
+
         return response()->json(['data' => $pendingStatus]);
     }
 
@@ -551,8 +585,32 @@ class ThesisController extends Controller
     public function getAllInprogressStatus(Request $request)
     {
         $facultyId = $request->user()->id;
-        $inProgressStatus = StudyStatus::with(['student', 'faculty', 'study'])->where('status', 'In Progress')->where('faculty_id', $facultyId)->get();
-        if (!$inProgressStatus) return response()->json(['message', 'No in-progress data found.'], 404);
+
+        $inProgressStatus = StudyStatus::with(['student', 'faculty', 'study'])
+            ->where('status', 'In Progress')
+            ->where('faculty_id', $facultyId)
+            ->get()
+            ->map(function ($row) {
+                $faculty = $row->faculty;
+
+                return [
+                    'id' => $row->id,
+                    'student' => $row->student,
+                    'study' => $row->study,
+                    'status' => $row->status,
+                    'faculty' => $faculty,
+                    'faculty_role' => $faculty && method_exists($faculty, 'getRoleNames')
+                        ? $faculty->getRoleNames()->first()
+                        : null,
+                    'created_at' => $row->created_at,
+                    'updated_at' => $row->updated_at,
+                ];
+            });
+
+        if ($inProgressStatus->isEmpty()) {
+            return response()->json([], 404);
+        }
+
         return response()->json(['data' => $inProgressStatus]);
     }
 
@@ -564,7 +622,7 @@ class ThesisController extends Controller
     {
         $facultyId = $request->user()->id;
         $approvedStatus = StudyStatus::with(['student', 'faculty', 'study'])->where('status', 'Approved')->where('faculty_id', $facultyId)->get();
-        if (!$approvedStatus) return response()->json(['message', 'No approved data found.'], 404);
+        if (!$approvedStatus) return response()->json([], 404);
         return response()->json(['data' => $approvedStatus]);
     }
 }

@@ -12,8 +12,16 @@ class FacultyController extends Controller
      */
     public function faculty(Request $request)
     {
-        $users = User::whereDoesntHave('roles', function ($query) {
-            $query->where('name', 'Student');
+        $excludedRoles = [
+            'Student',
+            'Department Research Coordinator',
+            'Department Chairperson',
+            'College Research Coordinator',
+            'College Dean',
+        ];
+
+        $users = User::whereDoesntHave('roles', function ($query) use ($excludedRoles) {
+            $query->whereIn('name', $excludedRoles);
         })->select('id', 'name')->get();
 
         if ($users->isEmpty()) {
