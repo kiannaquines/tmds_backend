@@ -14,6 +14,10 @@ class FacultyController extends Controller
     {
         $excludedRoles = [
             'Student',
+            'College Dean',
+            'Department Chairperson',
+            'College Research Coordinator',
+            'Department Research Coordinator',
         ];
 
         $users = User::whereDoesntHave('roles', function ($query) use ($excludedRoles) {

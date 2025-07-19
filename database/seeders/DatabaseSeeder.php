@@ -23,48 +23,48 @@ class DatabaseSeeder extends Seeder
             'name' => 'Elizabeth R. Genotiva',
             'email' => 'elizabeth@gmail.com',
             'password' => 'password'
-        ])->assignRole(['Adviser']);
+        ])->assignRole(['Adviser','Faculty']);
 
         User::factory()->create([
             'name' => 'Catherine Daffon',
             'email' => 'cath@gmail.com',
             'password' => 'password'
-        ])->assignRole(['Adviser','Department Research Coordinator']);
+        ])->assignRole(['Adviser','Department Research Coordinator','Faculty']);
 
         User::factory()->create([
             'name' => 'Arjay Agbunag',
             'email' => 'arjay@gmail.com',
             'password' => 'password'
-        ])->assignRole(['Adviser','Department Chairperson']);
+        ])->assignRole(['Adviser','Department Chairperson','Faculty']);
 
         User::factory()->create([
             'name' => 'Sherly Ortiz',
             'email' => 'ortiz@gmail.com',
             'password' => 'password'
-        ])->assignRole(['Adviser','College Research Coordinator']);
+        ])->assignRole(['Adviser','College Research Coordinator', 'Faculty']);
 
         User::factory()->create([
             'name' => 'Maricel Dayaday',
             'email' => 'maricel@gmail.com',
             'password' => 'password'
-        ])->assignRole(['Adviser','College Dean']);
+        ])->assignRole(['Adviser','College Dean', 'Faculty']);
 
         User::factory()->create([
             'name' => 'Ryan Gonzaga',
             'email' => 'ryan@gmail.com',
             'password' => 'password'
-        ])->assignRole('Adviser');
+        ])->assignRole(['Adviser','Faculty']);
 
         User::factory()->create([
             'name' => 'Ralph Garidan',
             'email' => 'ralph@gmail.com',
             'password' => 'password'
-        ])->assignRole('Adviser');
+        ])->assignRole(['Adviser','Faculty']);
 
         User::factory()->create([
             'name' => 'Nor Corpuz',
             'email' => 'nor@gmail.com',
             'password' => 'password'
-        ])->assignRole('Adviser');
+        ])->assignRole(['Adviser','Faculty']);
     }
 }
