@@ -20,7 +20,7 @@ class ThesisController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|unique:studies,title',
+            'title' => 'required|string',
             'department' => 'required|string',
             'adviser' => 'required|string|exists:users,name|different:panel1|different:panel2|different:panel3',
             'panel1' => [
@@ -48,44 +48,59 @@ class ThesisController extends Controller
                 'different:adviser',
             ],
             'year' => 'required|integer',
-            'type' => 'required|string',
+            'type' => 'required|string|in:Outline,Manuscript',
         ]);
+
+        $studentId = $request->user()->id;
+        $normalizedTitle = strtolower(trim($validated['title']));
+        $type = $validated['type'];
+
+        $existingTypes = Thesis::where('user_id', $studentId)
+            ->whereRaw('LOWER(TRIM(title)) = ?', [$normalizedTitle])
+            ->pluck('type')
+            ->map(fn($t) => strtolower($t))
+            ->toArray();
+
+        if (in_array(strtolower($type), $existingTypes)) {
+            return response()->json([
+                'message' => "You already submitted a $type for this study."
+            ]);
+        }
+
+        if (count($existingTypes) >= 2) {
+            return response()->json([
+                'message' => 'You can only submit an outline and manuscript per study title.'
+            ]);
+        }
 
         $adviser = User::where('name', $validated['adviser'])->first();
         $panel1 = User::where('name', $validated['panel1'])->first();
         $panel2 = User::where('name', $validated['panel2'])->first();
         $panel3 = User::where('name', $validated['panel3'])->first();
 
-        if (!$panel1) return response()->json(['message' => 'First panel cannot be found, please try again.']);
-        if (!$panel2) return response()->json(['message' => 'Second panel cannot be found, please try again.']);
-        if (!$panel3) return response()->json(['message' => 'Third panel cannot be found, please try again.']);
+        if (!$panel1 || !$panel2 || !$panel3) {
+            return response()->json([
+                'message' => 'One or more panel members could not be found.'
+            ]);
+        }
 
-
-        $drc = User::role('Department Research Coordinator')
-            ->first();
-        $crc = User::role('College Research Coordinator')
-            ->first();
-        $dean = User::role('College Dean')
-            ->first();
-
-        $dc = User::role('Department Chairperson')
-            ->first();
-
-        $studentId = $request->user()->id;
-
+        $drc = User::role('Department Research Coordinator')->first();
+        $crc = User::role('College Research Coordinator')->first();
+        $dean = User::role('College Dean')->first();
+        $dc = User::role('Department Chairperson')->first();
 
         $thesis = Thesis::create([
             'user_id' => $studentId,
             'title' => $validated['title'],
-            'adviser' => $adviser['id'],
+            'adviser' => $adviser->id,
             'department' => $validated['department'],
             'year' => $validated['year'],
-            'type' => $validated['type']
+            'type' => $type,
         ]);
 
         Adviser::create([
-            'adviser' => $adviser['id'],
-            'study_id' => $thesis->id
+            'adviser' => $adviser->id,
+            'study_id' => $thesis->id,
         ]);
 
         Panel::insert([
@@ -106,73 +121,38 @@ class ThesisController extends Controller
                 'study_id' => $thesis->id,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
-        StudyStatus::insert([
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $adviser->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $panel1->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $panel2->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $panel3->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $drc->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $crc->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $dean->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                "student_id" => $studentId,
-                "faculty_id" => $dc->id,
-                "study_id" => $thesis->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
+        $facultyIds = array_filter([
+            $adviser?->id,
+            $panel1?->id,
+            $panel2?->id,
+            $panel3?->id,
+            $drc?->id,
+            $crc?->id,
+            $dean?->id,
+            $dc?->id,
         ]);
+
+        $statuses = array_map(function ($facultyId) use ($studentId, $thesis) {
+            return [
+                'student_id' => $studentId,
+                'faculty_id' => $facultyId,
+                'study_id' => $thesis->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }, $facultyIds);
+
+        StudyStatus::insert($statuses);
 
         return response()->json([
             'message' => 'Thesis created successfully.',
             'data' => $thesis,
         ], 201);
     }
+
 
     /**
      * @param \Illuminate\Http\Request $request
