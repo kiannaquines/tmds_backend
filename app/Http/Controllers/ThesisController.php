@@ -84,6 +84,19 @@ class ThesisController extends Controller
             ]);
         }
 
+        $existingThesis = Thesis::where('user_id', $studentId)
+            ->whereRaw('LOWER(TRIM(title)) = ?', [$normalizedTitle])
+            ->first();
+
+        if ($existingThesis) {
+            $existingAdviser = User::find($existingThesis->adviser);
+            if ($existingAdviser && $existingAdviser->name !== $validated['adviser']) {
+                return response()->json([
+                    'message' => 'The adviser must match the adviser used in your previous submission for this study title.',
+                ]);
+            }
+        }
+
         $drc = User::role('Department Research Coordinator')->first();
         $crc = User::role('College Research Coordinator')->first();
         $dean = User::role('College Dean')->first();
@@ -152,6 +165,7 @@ class ThesisController extends Controller
             'data' => $thesis,
         ], 201);
     }
+
 
 
     /**
@@ -417,26 +431,27 @@ class ThesisController extends Controller
     {
         $studentId = $request->user()->id;
 
-        $adviserList = DB::table('users')
+        $adviser = DB::table('users')
             ->join('advisers', 'users.id', '=', 'advisers.adviser')
             ->join('studies', 'advisers.study_id', '=', 'studies.id')
             ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->where('studies.user_id', '=', $studentId)
+            ->where('studies.user_id', $studentId)
             ->select(
                 'users.id as adviser_id',
                 'users.name as adviser_name',
                 'users.email as adviser_email',
                 'roles.name as role'
             )
-            ->get();
+            ->distinct()
+            ->first();
 
-        if ($adviserList->isEmpty()) {
+        if (!$adviser) {
             return response()->json(['message' => 'No adviser data found.'], 404);
         }
 
         return response()->json([
-            'data' => $adviserList,
+            'data' => $adviser,
         ]);
     }
 
@@ -458,8 +473,10 @@ class ThesisController extends Controller
                 'users.id as panel_id',
                 'users.name as panel_name',
                 'users.email as panel_email',
+                'studies.type as study_type',
                 'roles.name as role'
             )
+            ->orderBy('studies.type')
             ->get();
 
         if ($panelList->isEmpty()) {
