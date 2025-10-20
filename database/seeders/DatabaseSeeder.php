@@ -10,9 +10,10 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     */
+    */
     public function run(): void
     {
+        $this->call(RoleSeeder::class);
         User::factory()->create([
             'name' => 'Kian Naquines',
             'email' => 'kjgnaquines@gmail.com',
@@ -66,5 +67,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'nor@gmail.com',
             'password' => 'password'
         ])->assignRole(['Adviser','Faculty']);
+
     }
 }

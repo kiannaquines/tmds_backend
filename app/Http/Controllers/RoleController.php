@@ -11,7 +11,7 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::where('name', '!=', 'Student')->get()->map(function ($row) {
+        $roles = Role::whereNotIn('name', ['Student','Faculty'])->get()->map(function ($row) {
             return [
                 'role' => $row->name,
             ];
